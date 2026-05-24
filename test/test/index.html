@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>מגיני החלל: מערכת סקינים</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="game-wrapper">
+        <div id="ui">
+            <div class="stat-box">Score: <span id="score">0</span></div>
+            <div class="stat-box hp-stat">
+                <div>HP: <span id="hp-text">200/200</span></div>
+                <div class="top-hp-bar-container">
+                    <div id="top-hp-bar" class="top-hp-bar-fill"></div>
+                </div>
+            </div>
+            <div class="stat-box">Level: <span id="level">1</span></div>
+        </div>
+
+        <div id="player">
+            <div class="hp-bar-container"><div id="player-hp" class="hp-bar-fill"></div></div>
+            <div id="player-sprite-container"></div>
+        </div>
+
+        <div id="special-ability-btn" style="display: none;">
+            <div class="ability-icon">⚡</div>
+            <div class="ability-cooldown"></div>
+        </div>
+
+        <div id="overlay">
+            <h1 id="title">SPACE DEFENDER</h1>
+            <p id="sub-title">בחר ספינה וצא למשימה</p>
+            
+            <!-- Auth Container -->
+            <div id="auth-container" style="display: none;">
+                <h2 style="margin-bottom: 20px;">🔐 התחברות</h2>
+                
+                <!-- Google Login -->
+                <button onclick="signInWithGoogle()" style="background: rgba(66, 133, 244, 0.2); border-color: #4285f4; color: #4285f4; margin-bottom: 20px;">
+                    🔵 התחבר עם Google
+                </button>
+                
+                <div style="display: flex; align-items: center; margin: 20px 0; opacity: 0.5;">
+                    <div style="flex: 1; height: 1px; background: rgba(255,255,255,0.3);"></div>
+                    <span style="margin: 0 10px; font-size: 0.8rem;">או</span>
+                    <div style="flex: 1; height: 1px; background: rgba(255,255,255,0.3);"></div>
+                </div>
+                
+                <!-- Login Form -->
+                <div id="login-form" style="display: block;">
+                    <h3 style="margin-bottom: 15px; font-size: 1rem;">התחבר עם מייל</h3>
+                    <input type="email" id="login-email" placeholder="מייל" style="width: 100%; max-width: 300px; padding: 12px; margin: 8px 0; border: 2px solid var(--primary); background: rgba(0,0,0,0.5); color: white; border-radius: 5px; font-family: 'Orbitron', sans-serif;">
+                    <input type="password" id="login-password" placeholder="סיסמה" style="width: 100%; max-width: 300px; padding: 12px; margin: 8px 0; border: 2px solid var(--primary); background: rgba(0,0,0,0.5); color: white; border-radius: 5px; font-family: 'Orbitron', sans-serif;">
+                    <button onclick="signInWithEmail()" style="margin-top: 10px;">התחבר</button>
+                    <p style="margin-top: 15px; font-size: 0.85rem; opacity: 0.7;">
+                        אין לך חשבון? <a href="#" onclick="toggleAuthMode('signup'); return false;" style="color: var(--primary); text-decoration: underline;">הירשם כאן</a>
+                    </p>
+                </div>
+                
+                <!-- Signup Form -->
+                <div id="signup-form" style="display: none;">
+                    <h3 style="margin-bottom: 15px; font-size: 1rem;">הרשמה</h3>
+                    <input type="text" id="signup-name" placeholder="שם מלא" style="width: 100%; max-width: 300px; padding: 12px; margin: 8px 0; border: 2px solid var(--primary); background: rgba(0,0,0,0.5); color: white; border-radius: 5px; font-family: 'Orbitron', sans-serif;">
+                    <input type="email" id="signup-email" placeholder="מייל" style="width: 100%; max-width: 300px; padding: 12px; margin: 8px 0; border: 2px solid var(--primary); background: rgba(0,0,0,0.5); color: white; border-radius: 5px; font-family: 'Orbitron', sans-serif;">
+                    <input type="password" id="signup-password" placeholder="סיסמה (לפחות 6 תווים)" style="width: 100%; max-width: 300px; padding: 12px; margin: 8px 0; border: 2px solid var(--primary); background: rgba(0,0,0,0.5); color: white; border-radius: 5px; font-family: 'Orbitron', sans-serif;">
+                    <button onclick="signUpWithEmail()" style="margin-top: 10px;">הירשם</button>
+                    <p style="margin-top: 15px; font-size: 0.85rem; opacity: 0.7;">
+                        כבר יש לך חשבון? <a href="#" onclick="toggleAuthMode('login'); return false;" style="color: var(--primary); text-decoration: underline;">התחבר כאן</a>
+                    </p>
+                </div>
+                
+                <button onclick="showMainMenu()" style="margin-top: 20px; background: rgba(100,100,100,0.2); border-color: #666; color: #aaa;">
+                    ◀ חזרה לתפריט
+                </button>
+            </div>
+            
+            <!-- User Profile -->
+            <div id="user-profile" style="display: none;">
+                <div style="display: flex; flex-direction: column; align-items: center; margin-bottom: 30px;">
+                    <div id="user-icon" style="width: 80px; height: 80px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 2.5rem; margin-bottom: 15px; box-shadow: 0 0 30px var(--primary);">
+                        👤
+                    </div>
+                    <h2 id="user-name" style="margin: 0; font-size: 1.5rem;">שם משתמש</h2>
+                    <p id="user-email" style="margin: 5px 0; opacity: 0.7; font-size: 0.85rem;">email@example.com</p>
+                    <p id="user-providers" style="margin: 10px 0; font-size: 0.75rem; opacity: 0.6;">📧 Email/Password</p>
+                    
+                    <div style="display: flex; gap: 10px; margin-top: 15px;">
+                        <button onclick="editDisplayName()" style="padding: 8px 20px; font-size: 0.85rem; background: rgba(255,0,234,0.2); border-color: var(--secondary); color: var(--secondary);">
+                            ✏️ ערוך שם
+                        </button>
+                        <button onclick="logout()" style="padding: 8px 20px; font-size: 0.85rem; background: rgba(255,77,77,0.2); border-color: var(--danger); color: var(--danger);">
+                            🚪 התנתק
+                        </button>
+                    </div>
+                </div>
+                
+                <button onclick="showMainMenu()" style="width: 100%; max-width: 300px; font-size: 1.3rem; margin-top: 20px;">
+                    🎮 התחל משחק
+                </button>
+                
+                <button onclick="showMainMenu()" style="margin-top: 10px; background: rgba(100,100,100,0.2); border-color: #666; color: #aaa;">
+                    ◀ חזרה לתפריט
+                </button>
+            </div>
+            
+            <div id="leaderboard-container" style="display: none;">
+                <div class="leaderboard-tabs">
+                    <button class="lb-tab active" data-tab="overall">🏆 כללי</button>
+                    <button class="lb-tab" data-tab="classic">Classic</button>
+                    <button class="lb-tab" data-tab="interceptor">Interceptor</button>
+                    <button class="lb-tab" data-tab="tanker">Tanker</button>
+                    <button class="lb-tab" data-tab="phoenix">Phoenix</button>
+                    <button class="lb-tab" data-tab="vortex">Vortex</button>
+                    <button class="lb-tab" data-tab="joker">joker</button>
+                </div>
+                <div id="leaderboard-content"></div>
+                <button onclick="closeLeaderboard()" style="margin-top: 15px;">חזרה</button>
+            </div>
+
+            <div id="main-menu">
+            <div class="skin-selector">
+                <div class="skin-option selected" data-skin="classic">
+                    <div class="skin-preview">
+                        <svg viewBox="0 0 100 100"><path d="M50 5 L10 80 L50 65 L90 80 Z" fill="#00f2ff" /></svg>
+                    </div>
+                    <div class="skin-name">Classic</div>
+                </div>
+                <div class="skin-option" data-skin="interceptor">
+                    <div class="skin-preview">
+                        <svg viewBox="0 0 100 100"><path d="M50 5 L30 30 L10 90 L50 70 L90 90 L70 30 Z" fill="#ff00ea" /></svg>
+                    </div>
+                    <div class="skin-name">Interceptor</div>
+                    <div class="skin-desc">Balanced fighter</div>
+                </div>
+                <div class="skin-option" data-skin="tanker">
+                    <div class="skin-preview">
+                        <svg viewBox="0 0 100 100"><path d="M20 20 H80 V80 H20 Z M40 20 V5 M60 20 V5" fill="#2ecc71" stroke="#fff" stroke-width="2"/></svg>
+                    </div>
+                    <div class="skin-name">Tanker</div>
+                </div>
+                <div class="skin-option locked" data-skin="phoenix" data-unlock-level="3">
+                    <div class="skin-preview">
+                        <svg viewBox="0 0 100 100">
+                            <path d="M50 5 L30 25 L10 70 L25 85 L50 75 L75 85 L90 70 L70 25 Z" fill="#ff6b35" />
+                            <path d="M35 30 L50 15 L65 30" fill="#ffd700" />
+                        </svg>
+                    </div>
+                    <div class="skin-name">Phoenix</div>
+                    <div class="skin-desc">⚡ Fast fire 🔥 +50% dmg</div>
+                    <div class="skin-lock">🔒 LVL 3</div>
+                </div>
+                <div class="skin-option locked" data-skin="vortex" data-unlock-level="5">
+                    <div class="skin-preview">
+                        <svg viewBox="0 0 100 100">
+                            <path d="M50 10 L35 30 L25 50 L35 70 L50 90 L65 70 L75 50 L65 30 Z" fill="#9b59b6" />
+                            <circle cx="50" cy="50" r="15" fill="#3498db" />
+                        </svg>
+                    </div>
+                    <div class="skin-name">Vortex</div>
+                    <div class="skin-desc">⚡⚡ Ultra-fast 💥 2X dmg! ❤️ 2X HP</div>
+                    <div class="skin-lock">🔒 LVL 5</div>
+                </div>
+                <div class="skin-option locked" data-skin="joker" data-unlock-level="10">
+                    <div class="skin-preview">
+                        <svg viewBox="0 0 100 100">
+                            <path d="M50 5 L20 25 L10 60 L25 85 L50 75 L75 85 L90 60 L80 25 Z" fill="#ff4500" />
+                            <path d="M35 20 L50 5 L65 20" fill="#ffff00" />
+                            <circle cx="35" cy="35" r="5" fill="#ffff00" />
+                            <circle cx="65" cy="35" r="5" fill="#ffff00" />
+                        </svg>
+                    </div>
+                    <div class="skin-name">joker</div>
+                    <div class="skin-desc">🔥🔥🔥 Fire | ⚡⚡⚡ 2X fire | 💥 3X! | ❤️❤️❤️</div>
+                    <div class="skin-lock">🔒 LVL 10</div>
+                </div>
+            </div>
+
+            <button onclick="initGame()">Start Mission</button>
+            <button id="login-button" onclick="toggleLoginMenu()" style="margin-top: 10px; background: rgba(255,215,0,0.2); border-color: #ffd700; color: #ffd700;">🔐 התחבר</button>
+            <button onclick="showLeaderboard()" style="margin-top: 10px; background: rgba(255,215,0,0.2); border-color: #ffd700; color: #ffd700;">🏆 לוח שיאים</button>
+            <button onclick="showSettings()" style="margin-top: 10px; background: rgba(100,200,255,0.2); border-color: #64c8ff; color: #64c8ff;">⚙️ הגדרות</button>
+            </div>
+            
+            <div id="settings-container" style="display: none;">
+                <h2 style="margin-bottom: 20px;">⚙️ הגדרות</h2>
+                
+                <h3 style="color: var(--primary); margin-top: 20px; margin-bottom: 15px;">📱 מצב מכשיר</h3>
+                
+                <div class="settings-group">
+                    <label>סוג מכשיר:</label>
+                    <div class="button-group">
+                        <button id="device-auto" class="setting-btn active" onclick="setDevice('auto')">🔄 אוטומטי</button>
+                        <button id="device-mobile" class="setting-btn" onclick="setDevice('mobile')">📱 טלפון</button>
+                        <button id="device-desktop" class="setting-btn" onclick="setDevice('desktop')">🖥️ מחשב</button>
+                    </div>
+                    <small style="opacity: 0.7;">במצב טלפון, הגדרות המקשים מושבתות</small>
+                </div>
+                
+                <h3 style="color: var(--primary); margin-top: 20px; margin-bottom: 15px;">🎮 שליטה</h3>
+                
+                <div class="settings-group" id="control-settings">
+                    <label>שליטה בספינה:</label>
+                    <div class="button-group">
+                        <button id="control-mouse" class="setting-btn active" onclick="setControl('mouse')">🖱️ עכבר</button>
+                        <button id="control-arrows" class="setting-btn" onclick="setControl('arrows')">⬅️➡️ חצים</button>
+                    </div>
+                </div>
+                
+                <div class="settings-group" id="shoot-key-settings">
+                    <label>מקש ירי:</label>
+                    <div class="key-display">
+                        <span id="shoot-key-display">Space</span>
+                        <button onclick="changeKey('shoot')" class="change-key-btn">שנה מקש</button>
+                    </div>
+                    <small style="opacity: 0.7;">לחץ על "שנה מקש" ואז לחץ על המקש הרצוי</small>
+                </div>
+                
+                <div class="settings-group" id="ability-key-settings">
+                    <label>מקש יכולת מיוחדת:</label>
+                    <div class="key-display">
+                        <span id="ability-key-display">B</span>
+                        <button onclick="changeKey('ability')" class="change-key-btn">שנה מקש</button>
+                    </div>
+                </div>
+                
+                <div class="settings-group" id="rightclick-settings">
+                    <label>קליק ימני ליכולת מיוחדת:</label>
+                    <div class="button-group">
+                        <button id="rightclick-on" class="setting-btn active" onclick="setRightClick(true)">✅ פעיל</button>
+                        <button id="rightclick-off" class="setting-btn" onclick="setRightClick(false)">❌ כבוי</button>
+                    </div>
+                </div>
+                
+                <h3 style="color: var(--primary); margin-top: 30px; margin-bottom: 15px;">📜 כללי משחק</h3>
+                
+                <div class="settings-group">
+                    <label>אויבים יורים דרך סלעים:</label>
+                    <div class="button-group">
+                        <button id="enemies-shoot-asteroids-yes" class="setting-btn active" onclick="setGameRule('enemiesShootThroughAsteroids', true)">✅ כן</button>
+                        <button id="enemies-shoot-asteroids-no" class="setting-btn" onclick="setGameRule('enemiesShootThroughAsteroids', false)">❌ לא</button>
+                    </div>
+                    <small style="opacity: 0.7;">קליעי אויבים עוברים דרך אסטרואידים</small>
+                </div>
+                
+                <div class="settings-group">
+                    <label>השחקן יורה דרך סלעים:</label>
+                    <div class="button-group">
+                        <button id="player-shoot-asteroids-yes" class="setting-btn" onclick="setGameRule('playerShootThroughAsteroids', true)">✅ כן</button>
+                        <button id="player-shoot-asteroids-no" class="setting-btn active" onclick="setGameRule('playerShootThroughAsteroids', false)">❌ לא</button>
+                    </div>
+                    <small style="opacity: 0.7;">הקליעים שלך עוברים דרך אסטרואידים</small>
+                </div>
+                
+                <button onclick="closeSettings()" style="margin-top: 20px;">חזרה</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="auth.js"></script>
+    <script type="module" src="main.js"></script>
+    <script type="module" src="https://giamatamat2013.github.io/Warp/firebase-ls-proxy.js"></script>
+
+</body>
+</html>
