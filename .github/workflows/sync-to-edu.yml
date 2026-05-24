@@ -1,4 +1,4 @@
-name: Sync to Educational Repo
+name: Sync to Educational Repo (Test)
 
 on:
   push:
@@ -9,22 +9,22 @@ jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
-      # 1. משיכת הקוד מהמשחק הרגיל - עם ביטול מפתח ברירת המחדל כדי שלא יתנגש
+      # 1. משיכת הקוד מהמשחק הרגיל
       - name: Checkout Regular Game
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          persist-credentials: false # <--- זה התיקון שמונע את שגיאת 403
+          persist-credentials: false
 
-      # 2. הגדרת ה-Git ודחיפת הקוד למאגר החינוכי
-      - name: Push to Educational Repo
+      # 2. הגדרת ה-Git ודחיפת הקוד לענף test במאגר החינוכי
+      - name: Push to Educational Repo Test Branch
         run: |
-          # הגדרת משתמש Git זמני בשביל הפעולה
+          # הגדרת משתמש Git זמני
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           
-          # חיבור המאגר החינוכי בעזרת ה-Token שהגדרת ב-Secrets
+          # חיבור המאגר החינוכי בעזרת ה-Token
           git remote add edu https://${{ secrets.EDU_REPO_TOKEN }}@github.com/giamat13/space-game-edu.git
           
-          # דחיפת הקוד (בכוח, כי המאגר החינוכי ריק כרגע)
-          git push edu main:main --force
+          # דחיפת ענף main המקומי אל ענף test המרוחק (בכוח)
+          git push edu main:test --force
