@@ -1,9 +1,10 @@
-import { DOM, SKINS, state, resetState, setCurrentSkin, currentSkinKey, loadUnlockedSkins, isSkinUnlocked, unlockSkin, saveMaxLevel, getMaxLevel, getLeaderboard, saveScore, keyBindings, loadKeyBindings, setKeyBinding, gameRules, loadGameRules, setGameRule, deviceMode, loadDeviceMode, setDeviceMode } from './data.js';
+import { DOM, SKINS, state, resetState, setCurrentSkin, currentSkinKey, loadUnlockedSkins, isSkinUnlocked, unlockSkin, saveMaxLevel, getMaxLevel, getLeaderboard, saveScore, keyBindings, loadKeyBindings, setKeyBinding, gameRules, loadGameRules, setGameRule, deviceMode, loadDeviceMode, setDeviceMode, playerProfile, loadPlayerProfile, setGrade, setSubject, autoAdvanceGrade } from './data.js';
 import { updatePlayerPos, movePlayer, updateHPUI, shoot, showFloatingMessage, useVortexLaser, usePhoenixFeathers, useJokerChaos } from './systems.js';
 import { handleSpawning } from './systems.js';
 import { updateBullets, updateEnemyBullets, updateBurgers, updateIngredients, updateAsteroids, updateEnemies } from './updates.js';
 import { initAuth, currentUser, isAuthenticated } from './auth.js';
 import { initFirestoreSync } from './firestore-sync.js';
+import { loadQuestions, isQuestionActive } from './questions.js';
 
 // ===== INITIALIZATION =====
 
@@ -14,7 +15,11 @@ loadUnlockedSkins();
 loadKeyBindings();
 loadGameRules();
 loadDeviceMode();
+loadPlayerProfile();
+autoAdvanceGrade();
+loadQuestions();
 updateSkinOptions();
+updateGradeSubjectDisplay();
 console.log('✅ [INIT] Game loaded successfully');
 
 // ===== LEADERBOARD =====
@@ -288,6 +293,10 @@ function handleLevelUp() {
 
 function update() {
     if(!state.active) return;
+    if(isQuestionActive()) {
+        requestAnimationFrame(update);
+        return;
+    }
     const now = Date.now();
     
     handleLevelUp();
@@ -535,6 +544,82 @@ console.log('✅ [INIT] 40 stars generated');
 DOM.playerSpriteContainer.innerHTML = SKINS.classic.svg;
 console.log('✅ [INIT] Player sprite set to classic skin');
 console.log('🎮 [INIT] All systems ready!');
+
+// ===== GRADE & SUBJECT SELECTOR =====
+
+// Read URL params on load (e.g. ?grade=7&subject=science)
+function applyURLParams() {
+    const params = new URLSearchParams(window.location.search);
+    const grade = params.get('grade');
+    const subject = params.get('subject');
+    if (grade) {
+        setGrade(grade);
+        console.log(`🔗 [URL] Grade set from URL: ${grade}`);
+    }
+    if (subject) {
+        setSubject(subject);
+        console.log(`🔗 [URL] Subject set from URL: ${subject}`);
+    }
+}
+applyURLParams();
+
+function updateGradeSubjectDisplay() {
+    const gradeSelect = document.getElementById('grade-select');
+    const subjectSelect = document.getElementById('subject-select');
+    if (gradeSelect && playerProfile.grade) gradeSelect.value = String(playerProfile.grade);
+    if (subjectSelect) subjectSelect.value = playerProfile.subject || 'science';
+    updateShareLink();
+}
+
+function onGradeChange(val) {
+    setGrade(val);
+    updateShareLink();
+}
+
+function onSubjectChange(val) {
+    setSubject(val);
+    updateShareLink();
+}
+
+function updateShareLink() {
+    const grade = playerProfile.grade;
+    const subject = playerProfile.subject || 'science';
+    const linkEl = document.getElementById('share-link-input');
+    const containerEl = document.getElementById('share-link-container');
+    if (!linkEl || !containerEl) return;
+
+    if (!grade) {
+        containerEl.style.display = 'none';
+        return;
+    }
+
+    containerEl.style.display = 'block';
+    const base = window.location.origin + window.location.pathname;
+    linkEl.value = `${base}?grade=${grade}&subject=${subject}`;
+}
+
+function copyShareLink() {
+    const linkEl = document.getElementById('share-link-input');
+    if (!linkEl) return;
+    linkEl.select();
+    linkEl.setSelectionRange(0, 99999);
+    navigator.clipboard.writeText(linkEl.value).then(() => {
+        const btn = document.getElementById('copy-link-btn');
+        if (btn) {
+            btn.textContent = '✅ הועתק!';
+            setTimeout(() => { btn.textContent = '📋 העתק'; }, 2000);
+        }
+    }).catch(() => {
+        document.execCommand('copy');
+    });
+}
+
+window.onGradeChange = onGradeChange;
+window.onSubjectChange = onSubjectChange;
+window.copyShareLink = copyShareLink;
+
+// Pause game loop when a question is active
+const _origUpdate = update;
 
 // ===== DEBUG COMMANDS =====
 

@@ -530,3 +530,54 @@ export function resetState() {
     state.jokerAbility.endTime = 0;
     console.log('✅ [STATE] Reset complete');
 }
+
+// ===== GRADE & SUBJECT SELECTION =====
+
+export let playerProfile = {
+    grade: null,     // 1–12, or null if not set
+    subject: 'science'
+};
+
+export function loadPlayerProfile() {
+    const saved = getCookie('playerProfile');
+    if (saved) {
+        try {
+            playerProfile = { ...playerProfile, ...JSON.parse(saved) };
+            console.log('✅ [PROFILE] Loaded:', playerProfile);
+        } catch(e) { console.warn('⚠️ [PROFILE] Failed to parse saved profile'); }
+    }
+}
+
+export function savePlayerProfile() {
+    setCookie('playerProfile', JSON.stringify(playerProfile));
+}
+
+export function setGrade(grade) {
+    playerProfile.grade = parseInt(grade);
+    savePlayerProfile();
+    console.log('📚 [PROFILE] Grade set to:', playerProfile.grade);
+}
+
+export function setSubject(subject) {
+    playerProfile.subject = subject;
+    savePlayerProfile();
+    console.log('📚 [PROFILE] Subject set to:', playerProfile.subject);
+}
+
+// Auto-advance grade on Sept 1 each year
+export function autoAdvanceGrade() {
+    const saved = getCookie('playerProfileYear');
+    const currentYear = new Date().getFullYear();
+    const now = new Date();
+    const isSeptOrLater = now.getMonth() >= 8; // 0-indexed, 8 = September
+    const academicYear = isSeptOrLater ? currentYear : currentYear - 1;
+
+    if (saved && parseInt(saved) < academicYear && playerProfile.grade !== null) {
+        const yearsDiff = academicYear - parseInt(saved);
+        const newGrade = Math.min(12, playerProfile.grade + yearsDiff);
+        playerProfile.grade = newGrade;
+        savePlayerProfile();
+        console.log(`📅 [PROFILE] Auto-advanced grade to ${newGrade} (new academic year)`);
+    }
+    setCookie('playerProfileYear', academicYear.toString());
+}
