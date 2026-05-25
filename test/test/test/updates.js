@@ -1,6 +1,5 @@
 import { DOM, state, gameRules } from './data.js';
 import { damagePlayer, updateHPUI, enemyShoot, createExplosion, showFloatingMessage, healPlayer, spawnIngredients } from './systems.js';
-import { showQuestion } from './questions.js';
 
 // ===== UPDATE BULLETS =====
 
@@ -266,12 +265,6 @@ export function updateAsteroids() {
             createExplosion(aRect.left + 25, aRect.top + 25, 'var(--stone)');
             ast.el.remove();
             state.asteroids.splice(i, 1);
-            // Show question with 5s cooldown
-            showQuestion('asteroid', (correct) => {
-                if (correct) {
-                    import('./systems.js').then(m => m.healPlayer(20));
-                }
-            });
             continue;
         }
         
@@ -422,13 +415,6 @@ export function updateEnemies(now) {
                     }
                     en.el.remove();
                     state.enemies.splice(i, 1);
-                    // Show question on enemy kill
-                    showQuestion('kill', (correct) => {
-                        if (correct) {
-                            state.score += 50;
-                            DOM.scoreEl.innerText = state.score;
-                        }
-                    });
                 }
                 break;
             }
